@@ -8,5 +8,5 @@ typedef struct
   byte rainbowTime;
   byte hue;
   byte saturation;
-  CRGB ledPreset[4];
+  CRGB ledPreset[9];
 } UserPreference;

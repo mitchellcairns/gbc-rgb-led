@@ -4,13 +4,13 @@
 
 #define LED_PIN 4
 
-#define LED_COUNT 4
+#define LED_COUNT 9
 
 #define CHECK_COUNT 8 // How many times to poll buttons for averages
-#define CHECK_SAVE 25
+#define CHECK_SAVE 8
 
-#define MAX_BRIGHTNESS 50
-#define RCV 160
+#define MAX_BRIGHTNESS 70
+#define RCV 180
 
 // PIN setup
 // ----------------
@@ -42,7 +42,7 @@ byte dpadPresses = 0;
 // ----------------
 
 // Definitions for the different color modes
-byte colorMode = 2;
+byte colorMode = 1;
 #define COLORMODE_RAINBOW 0
 #define COLORMODE_USER 1
 #define COLORMODE_SOLID 2
@@ -76,28 +76,26 @@ byte rainbowTime = 50;
 #define COLOR_TIME    50
 CHSV rainbowColor = CHSV(0,255,RCV);
 
-CRGB leds[LED_COUNT];
+CRGB leds[LED_COUNT] = { CRGB::Black, CRGB::Black, CRGB::Black, CRGB::Black, CRGB::Black, CRGB::Black, CRGB::Black, CRGB::Black, CRGB::Black};;
 CRGB lastLeds[LED_COUNT];
 CRGB nextLeds[LED_COUNT];
-CRGB ledPreset[LED_COUNT] = { 0xFFC100, 0xFFC100, CRGB::MediumBlue, CRGB::Green};
+CRGB ledPreset[LED_COUNT] = { 0xff0505, 0xff8605, 0xfff700, 0x22ff00, 0x0022ff, 0x0022ff, 0x0022ff, 0x0022ff, 0xAE00ff};
 CRGB editPresetLeds[LED_COUNT];
 
 UserPreference upref;
 
 void setup() {
-
-  //disable BOD
-  byte mcucr1;
-  byte mcucr2;
-  mcucr1 = MCUCR | _BV(BODS) | _BV(BODSE);  //turn off the brown-out detector
-  mcucr2 = mcucr1 & ~_BV(BODSE);
-  MCUCR = mcucr1;
-  MCUCR = mcucr2;\
-
-  //disable ADC
-  ADCSRA = 0;
   
   // put your setup code here, to run once:
+  FastLED.addLeds<WS2812B, LED_PIN, RGB>(leds, LED_COUNT);
+  FastLED.setBrightness(brightness);
+  rainbowColor.value = RCV;
+
+  pinMode(selPIN, INPUT_PULLUP);
+  pinMode(leftPIN, INPUT_PULLUP);
+  pinMode(rightPIN, INPUT_PULLUP);
+  pinMode(3, OUTPUT);
+  digitalWrite(3, LOW);
 
   delay(100);
   EEPROM.get(0, upref);
@@ -114,16 +112,7 @@ void setup() {
       ledPreset[i] = upref.ledPreset[i];
     }
   }
-  
-  pinMode(selPIN, INPUT_PULLUP);
-  pinMode(leftPIN, INPUT_PULLUP);
-  pinMode(rightPIN, INPUT_PULLUP);
-  pinMode(3, OUTPUT);
-  digitalWrite(3, LOW);
-  
-  FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, LED_COUNT);
-  FastLED.setBrightness(brightness);
-  rainbowColor.value = RCV;
+
   FastLED.show();
   
 }
@@ -477,16 +466,40 @@ void setButtonGroup(byte buttonGroup, bool loadDefault) {
   if (buttonGroup == A_EDIT) {
     if (loadDefault) {
       editPresetLeds[0] = ledPreset[0];
-      editPresetLeds[1] = ledPreset[1];
     }
     else {
       editPresetLeds[0] = rainbowColor;
-      editPresetLeds[1] = rainbowColor;
       ledPreset[0] = rainbowColor;
-      ledPreset[1] = rainbowColor;
     }
   }
   else if (buttonGroup == B_EDIT) {
+    if (loadDefault) {
+      editPresetLeds[1] = ledPreset[1];
+    }
+    else {
+      editPresetLeds[1] = rainbowColor;
+      ledPreset[1] = rainbowColor;
+    }
+  }
+  else if (buttonGroup == DPAD_EDIT) {
+    if (loadDefault) {
+      editPresetLeds[4] = ledPreset[4];
+      editPresetLeds[5] = ledPreset[5];
+      editPresetLeds[6] = ledPreset[6];
+      editPresetLeds[7] = ledPreset[7];
+    }
+    else {
+      editPresetLeds[4] = rainbowColor;
+      ledPreset[4] = rainbowColor;
+      editPresetLeds[5] = rainbowColor;
+      ledPreset[5] = rainbowColor;
+      editPresetLeds[6] = rainbowColor;
+      ledPreset[6] = rainbowColor;
+      editPresetLeds[7] = rainbowColor;
+      ledPreset[7] = rainbowColor;
+    }
+  }
+  else if (buttonGroup == START_EDIT) {
     if (loadDefault) {
       editPresetLeds[2] = ledPreset[2];
     }
@@ -495,7 +508,7 @@ void setButtonGroup(byte buttonGroup, bool loadDefault) {
       ledPreset[2] = rainbowColor;
     }
   }
-  else if (buttonGroup == DPAD_EDIT) {
+  else if (buttonGroup == SEL_EDIT) {
     if (loadDefault) {
       editPresetLeds[3] = ledPreset[3];
     }
@@ -504,11 +517,14 @@ void setButtonGroup(byte buttonGroup, bool loadDefault) {
       ledPreset[3] = rainbowColor;
     }
   }
-  else if (buttonGroup == START_EDIT) {
-    
-  }
-  else if (buttonGroup == SEL_EDIT) {
-    
+  else if (buttonGroup == POWER_EDIT) {
+    if (loadDefault) {
+      editPresetLeds[8] = ledPreset[8];
+    }
+    else {
+      editPresetLeds[8] = rainbowColor;
+      ledPreset[8] = rainbowColor;
+    }
   }
   resetColor(false);
 }
@@ -577,8 +593,6 @@ void idle(byte pressCount) {
   // USER INTERFACE
   if (configMode == DEFAULT_MODE) {
     if (pressCount == HELD_THREE) buttonFunction(ENABLE_CONFIG);
-    else if (pressCount == 2) buttonFunction(BRIGHT_DOWN);
-    else if (pressCount == 3) buttonFunction(BRIGHT_UP);
   }
   else if (configMode == CONFIG_MODE) {
     if (dpadPresses == DPAD_LEFT) buttonFunction(COLOR_MODE_DWN);
@@ -618,12 +632,12 @@ void idle(byte pressCount) {
       if (editMode == EDIT_HUE) {
         if (dpadPresses == DPAD_LEFT) buttonFunction(HUE_DOWN);
         else if (dpadPresses == DPAD_RIGHT) buttonFunction(HUE_UP);
-        else if (pressCount == 2) buttonFunction(ENABLE_SATSELECT);
+        else if (pressCount == HELD_TWO) buttonFunction(ENABLE_SATSELECT);
       }
       else if (editMode == EDIT_SATURATION) {
         if (dpadPresses == DPAD_LEFT) buttonFunction(SATURATION_DOWN);
         else if (dpadPresses == DPAD_RIGHT) buttonFunction(SATURATION_UP);
-        else if (pressCount == 2) buttonFunction(ENABLE_HUESELECT);
+        else if (pressCount == HELD_TWO) buttonFunction(ENABLE_HUESELECT);
       }
     }
     // ----------------
