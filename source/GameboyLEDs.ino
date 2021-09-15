@@ -9,7 +9,7 @@
 #define CHECK_COUNT 8 // How many times to poll buttons for averages
 #define CHECK_SAVE 8
 
-#define MAX_BRIGHTNESS 70
+#define MAX_BRIGHTNESS 80
 #define RCV 180
 
 // PIN setup
@@ -42,7 +42,7 @@ byte dpadPresses = 0;
 // ----------------
 
 // Definitions for the different color modes
-byte colorMode = 1;
+byte colorMode = 0;
 #define COLORMODE_RAINBOW 0
 #define COLORMODE_USER 1
 #define COLORMODE_SOLID 2
@@ -108,7 +108,7 @@ void setup() {
     rainbowTime = upref.rainbowTime;
     rainbowColor.hue = upref.hue;
     rainbowColor.saturation = upref.saturation;
-    for (byte i = 0; i < LED_COUNT-1; i++) {
+    for (byte i = 0; i < LED_COUNT; i++) {
       ledPreset[i] = upref.ledPreset[i];
     }
   }
@@ -286,7 +286,6 @@ void buttonFunction(byte in)  {
   else if (in == COLOR_MODE_DWN) {
     if (colorMode - 1 < 0) colorMode = 2;
     else colorMode -= 1;
-    if (colorMode < 0) 
     if (colorMode == COLORMODE_SOLID)
     {
       if (upref.saved == CHECK_SAVE) {
@@ -409,7 +408,7 @@ void buttonFunction(byte in)  {
     upref.rainbowTime = rainbowTime;
     upref.hue = rainbowColor.hue;
     upref.saturation = rainbowColor.saturation;
-    for (byte i = 0; i < LED_COUNT-1; i++) {
+    for (byte i = 0; i < LED_COUNT; i++) {
       upref.ledPreset[i] = ledPreset[i];
     }
     
