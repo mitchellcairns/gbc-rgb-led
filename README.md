@@ -1,4 +1,7 @@
-# gbc-rgb-led
+# gbc-rgb-led 
+**DEPRECIATED - SEE https://github.com/mitchellcairns/gbc-rgb-led-2.0**
+
+__________________________
 Gameboy Color RGB board for lighting up buttons with on-board controls.
 
 
